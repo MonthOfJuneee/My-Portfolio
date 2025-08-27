@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purba Das - Portfolio</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Orbitron and Space Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* === CSS Variables for a consistent color palette === */
+        :root {
+            --space-dark: #0a0a2a;
+            --space-purple: #7014e8;
+            --neon-blue: #00f5ff;
+            --cosmic-pink: #ff2bfa;
+            --star-yellow: #fff700;
+        }
+
+        /* === General Styles === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Space Mono', monospace;
+            color: white;
+            overflow-x: hidden;
+            background-color: var(--space-dark);
+            min-height: 100vh;
+        }
+
+        /* === Canvas Backgrounds for layering === */
+        #stars, #clouds {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        #stars { z-index: -2; }
+        #clouds { z-index: -1; }
+
+        /* === Typography === */
+        h1, h2, h3, h4, h5, h6 { font-family: 'Orbitron', sans-serif; }
+        .heading-sec {
+            text-align: center;
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            margin-bottom: 3rem;
+            background: linear-gradient(90deg, var(--neon-blue), var(--cosmic-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            animation: glow 3s infinite alternate, textGradient 5s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        /* === Keyframe Animations === */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 10px var(--neon-blue); }
+            50% { text-shadow: 0 0 20px var(--cosmic-pink); }
+        }
+        @keyframes textGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes scroll {
+            0% { top: 5px; opacity: 1; }
+            100% { top: 15px; opacity: 0; }
+        }
+        @keyframes popUp {
+            from { transform: translateY(20px) scale(0.8); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        /* New: for element visibility */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+        .fade-in-up.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* === Header === */
+        .header {
+            background: rgba(10, 10, 42, 0.7);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .header__content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header__logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .header__logo-img-cont img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-blue);
+            object-fit: cover;
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        .header__logo-img-cont img:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 43, 250, 0.7);
+        }
+        .header__logo-sub {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-blue);
+            font-size: 1.2rem;
+        }
+        .header__main ul { display: flex; gap: 2rem; list-style: none; }
+        .header__link-wrapper { position: relative; }
+        .header__link {
+            display: flex; flex-direction: column; align-items: center;
+            text-decoration: none; color: white; transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .header__link i { font-size: 1.2rem; margin-bottom: 0.5rem; transition: all 0.3s ease; }
+        .header__link:hover { color: var(--neon-blue); }
+        .header__link:hover i { transform: scale(1.2); color: var(--cosmic-pink); }
+
+        /* === Mobile Menu - Hidden by default === */
+        .header__sm-menu, .header__main-ham-menu-cont { display: none; }
+
+        /* === Hero Section === */
+        .home-hero {
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center;
+            padding: 7rem 2rem 2rem;
+            position: relative;
+        }
+        .heading-primary {
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, var(--neon-blue), var(--cosmic-pink));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            display: inline-block;
+            animation: glow 3s infinite alternate, textGradient 5s ease infinite;
+            background-size: 200% 200%;
+        }
+        .home-hero__info { max-width: 600px; margin: 0 auto 2rem; color: white; }
+        .home-hero__cta {
+            margin-top: 4rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* === Social Icons === */
+        .home-hero__socials {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .home-hero__social-icon-link {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px);
+            transition: all 0.3s ease; color: white;
+            text-decoration: none; cursor: pointer;
+        }
+        .home-hero__social-icon-link:hover {
+            background: rgba(112, 20, 232, 0.3);
+            transform: translateY(-5px);
+            color: var(--neon-blue);
+        }
+        .home-hero__social-icon-link i { font-size: 1.5rem; }
+
+        /* === Scroll Indicator === */
+        .home-hero__mouse-scroll-cont { margin-top: 5rem; }
+        .mouse {
+            width: 25px; height: 40px; border: 2px solid var(--neon-blue);
+            border-radius: 20px; position: relative;
+        }
+        .mouse::after {
+            content: ''; position: absolute; width: 4px; height: 8px;
+            background: var(--neon-blue); border-radius: 2px; top: 5px; left: 50%;
+            transform: translateX(-50%); animation: scroll 2s infinite;
+        }
+
+        /* === Character Pop-up Styles === */
+        .character-pop-up {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1001;
+            transform: translateY(20px) scale(0.8);
+            pointer-events: none;
+        }
+        .character-pop-up.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+        .character-pop-up__bubble {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            position: relative;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Space Mono', monospace;
+            box-shadow: 0 0 15px var(--neon-blue);
+            max-width: 250px;
+        }
+        .character-pop-up__bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 20px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .character-pop-up__character {
+            width: 80px;
+            height: 80px;
+            background: none;
+            box-shadow: none;
+            animation: none;
+        }
+        .character-pop-up__character svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* === Sections === */
+        section { padding: 5rem 2rem; position: relative; }
+
+        /* === About Section === */
+        .about__content {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;
+            justify-items: center;
+        }
+        .about__content-title { margin-bottom: 1.5rem; }
+        .about__content-details-para { margin-bottom: 0.5rem; line-height: 1.6; }
+        .about__content-skills h3 { margin-bottom: 1.5rem; }
+
+        /* === Skills === */
+        .skills { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .skills__skill {
+            padding: 0.5rem 1rem; background: rgba(112, 20, 232, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        .skills__skill:hover { background: rgba(112, 20, 232, 0.4); transform: translateY(-3px); }
+        .skills__skill i { color: var(--neon-blue); }
+
+        /* === Projects === */
+        .projects__content { max-width: 1200px; margin: 0 auto; }
+        .projects__row {
+            display: flex; gap: 2rem; margin-bottom: 1.5rem; align-items: center;
+            background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .projects__row:nth-child(even) { flex-direction: row-reverse; }
+        .projects__row:hover { border-color: var(--neon-blue); box-shadow: 0 10px 20px rgba(112, 20, 232, 0.2); }
+        .projects__row-img-cont { flex: 1; }
+        .projects__row-img { width: 100%; border-radius: 10px; transition: all 0.3s ease; }
+        .projects__row:hover .projects__row-img { transform: scale(1.02); }
+        .projects__row-content { flex: 1; }
+
+        /* === Contact Section === */
+        .contact__form { max-width: 600px; margin: 0 auto; }
+        .contact__form-group { margin-bottom: 1rem; }
+        .contact__form-input {
+            width: 100%; padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white; border-radius: 5px; transition: all 0.3s ease;
+        }
+        .contact__form-input:focus { outline: none; border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 245, 255, 0.3); }
+        .contact__form-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .contact__form-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* === Buttons === */
+        .btn {
+            display: inline-block; padding: 0.8rem 1.5rem;
+            background: linear-gradient(90deg, var(--space-purple), var(--cosmic-pink));
+            color: white; border: none; border-radius: 30px;
+            text-decoration: none; font-weight: bold; transition: all 0.3s ease; cursor: pointer;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(112, 20, 232, 0.4); }
+
+        /* === Footer === */
+        footer {
+            text-align: center; padding: 2rem;
+            background: rgba(10, 10, 42, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* === Responsive === */
+        @media (max-width: 768px) {
+            .header { padding: 0.5rem; }
+            .header__main ul { display: none; }
+            .header__main-ham-menu-cont { display: block; }
+            .home-hero__socials { display: flex; position: static; transform: none; margin-top: 1.5rem; }
+            .heading-primary { font-size: 2.5rem; }
+            .about__content { grid-template-columns: 1fr; }
+            .projects__row, .projects__row:nth-child(even) { flex-direction: column; }
+            .character-pop-up {
+                bottom: 150px;
+                right: 50%;
+                transform: translateX(50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stars" aria-hidden="true"></canvas>
+    <canvas id="clouds" aria-hidden="true"></canvas>
+
+    <header class="header">
+        <div class="header__content">
+            <div class="header__logo-container">
+                <div class="header__logo-img-cont">
+                    <!-- Added a robust placeholder image for when the user's image is not found -->
+                    <img src="my.jpg" onerror="this.onerror=null; this.src='https://placehold.co/50x50/0a0a2a/00f5ff?text=PD';" alt="Purba Das Profile Picture">
+                </div>
+                <span class="header__logo-sub">Purba Das</span>
+            </div>
+            <div class="header__main">
+                <ul class="header__links">
+                    <li class="header__link-wrapper">
+                        <a href="#home" class="header__link" data-message="Go back to the homepage!">
+                            <i class="fas fa-home"></i><span>Home</span>
+                        </a>
+                    </li>
+                    <li class="header__link-wrapper">
+                        <a href="#about" class="header__link" data-message="Learn more about me and my skills!">
+                            <i class="fas fa-user"></i><span>About</span>
+                        </a>
+                    </li>
+                    <li class="header__link-wrapper">
+                        <a href="#projects" class="header__link" data-message="Explore my latest creative projects!">
+                            <i class="fas fa-code"></i><span>Projects</span>
+                        </a>
+                    </li>
+                    <li class="header__link-wrapper">
+                        <a href="#contact" class="header__link" data-message="Ready to connect? Send me a message!">
+                            <i class="fas fa-envelope"></i><span>Contact</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <section id="home" class="home-hero">
+        <div class="home-hero__content fade-in-up">
+            <h1 class="heading-primary">Hey, It's Purba</h1>
+            <div class="home-hero__info delay-1">
+                <p>Frontend Developer | UI/UX Designer | Creative Thinker</p>
+            </div>
+            <div class="home-hero__cta delay-2">
+                <a href="#projects" class="btn" id="view-work-btn" data-message="Click here to explore my work!">View My Work</a>
+                <div class="home-hero__socials">
+                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="home-hero__social-icon-link" data-message="Connect with me on LinkedIn!">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="home-hero__social-icon-link" data-message="Check out my code on GitHub!">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="home-hero__social-icon-link" data-message="Follow me on Twitter for updates!">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="home-hero__social-icon-link" data-message="See my creative side on Instagram!">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="home-hero__mouse-scroll-cont" style="margin-top: 5rem;">
+            <div class="mouse"></div>
+        </div>
+
+        <!-- Character Pop-up container -->
+        <div class="character-pop-up" id="character-pop-up">
+            <div class="character-pop-up__bubble">
+                <p id="character-message">Hello! I'm ready to help.</p>
+            </div>
+            <div class="character-pop-up__character">
+                <!-- SVG for the cute, full-body character -->
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="bodyGradient" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#7014e8" />
+                            <stop offset="100%" stop-color="#ff2bfa" />
+                        </linearGradient>
+                        <filter id="glow">
+                            <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#00f5ff" flood-opacity="0.8" />
+                        </filter>
+                    </defs>
+                    <!-- Body -->
+                    <rect x="25" y="40" width="50" height="45" rx="10" ry="10" fill="url(#bodyGradient)" filter="url(#glow)" />
+                    <!-- Head -->
+                    <circle cx="50" cy="40" r="25" fill="url(#bodyGradient)" filter="url(#glow)" />
+                    <!-- Eyes -->
+                    <circle cx="40" cy="35" r="5" fill="#fff" />
+                    <circle cx="60" cy="35" r="5" fill="#fff" />
+                    <!-- Antenna -->
+                    <path d="M50 15 L50 25 M45 20 A5 5 0 0 1 55 20" stroke="#00f5ff" stroke-width="2" fill="none" />
+                    <!-- Legs -->
+                    <rect x="35" y="80" width="10" height="15" fill="#00f5ff" />
+                    <rect x="55" y="80" width="10" height="15" fill="#00f5ff" />
+                    <!-- Arms -->
+                    <rect x="20" y="50" width="5" height="20" rx="2" ry="2" fill="#00f5ff" />
+                    <rect x="75" y="50" width="5" height="20" rx="2" ry="2" fill="#00f5ff" />
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about">
+        <div class="main-container fade-in-up">
+            <h2 class="heading-sec">About Me</h2>
+            <div class="about__content">
+                <div class="about__content-main">
+                    <h3>Get to know me!</h3>
+                    <div class="about__content-details">
+                        <p class="about__content-details-para">I'm Purba Das, a Frontend Web Developer based in Kolkata. I create digital experiences that are both beautiful and functional.</p>
+                        <p class="about__content-details-para">I'm passionate about crafting intuitive interfaces and solving complex problems through code. When I'm not developing, you can find me exploring new technologies or contributing to open-source projects.</p>
+                    </div>
+                    <a href="#contact" class="btn">Contact Me</a>
+                </div>
+                <div class="about__content-skills">
+                    <h3>My Skills</h3>
+                    <div class="skills">
+                        <div class="skills__skill"><i class="fab fa-html5"></i> HTML</div>
+                        <div class="skills__skill"><i class="fab fa-css3-alt"></i> CSS</div>
+                        <div class="skills__skill"><i class="fab fa-js"></i> JavaScript</div>
+                        <div class="skills__skill"><i class="fab fa-react"></i> React</div>
+                        <div class="skills__skill"><i class="fab fa-sass"></i> SASS</div>
+                        <div class="skills__skill"><i class="fab fa-git-alt"></i> GIT</div>
+                        <div class="skills__skill"><i class="fab fa-wordpress"></i> Wordpress</div>
+                        <div class="skills__skill"><i class="fab fa-android"></i> Android</div>
+                        <div class="skills__skill"><i class="fab fa-figma"></i> Figma</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="projects">
+        <div class="projects__content">
+            <h2 class="heading-sec fade-in-up">My Projects</h2>
+            <div class="projects__row fade-in-up">
+                <div class="projects__row-img-cont">
+                    <img src="p1.avif" alt="Modern e-commerce dashboard" class="projects__row-img">
+                </div>
+                <div class="projects__row-content">
+                    <h3>E-Commerce Dashboard</h3>
+                    <p>A responsive dashboard for e-commerce businesses featuring real-time analytics and inventory management.</p>
+                    <a href="#" class="btn">View Project</a>
+                </div>
+            </div>
+            <div class="projects__row fade-in-up">
+                <div class="projects__row-img-cont">
+                    <img src="p3.webp" alt="Mobile fitness application interface" class="projects__row-img">
+                </div>
+                <div class="projects__row-content">
+                    <h3>Fitness Tracker App</h3>
+                    <p>A mobile-first application that helps users track workouts, nutrition, and health metrics.</p>
+                    <a href="#" class="btn">View Project</a>
+                </div>
+            </div>
+            <div class="projects__row fade-in-up">
+                <div class="projects__row-img-cont">
+                    <img src="p6.jpg" alt="HR Management System dashboard" class="projects__row-img">
+                </div>
+                <div class="projects__row-content">
+                    <h3>HR Management System</h3>
+                    <p>A comprehensive system to manage employee data, attendance, and payroll. Streamlines human resources tasks for companies.</p>
+                    <a href="#" class="btn">View Project</a>
+                </div>
+            </div>
+            <div class="projects__row fade-in-up">
+                <div class="projects__row-img-cont">
+                    <img src="p7.png" alt="Social Media Analytics Dashboard" class="projects__row-img">
+                </div>
+                <div class="projects__row-content">
+                    <h3>Social Media Analytics Dashboard</h3>
+                    <p>A tool for businesses to monitor and analyze their social media presence, engagement, and audience demographics.</p>
+                    <a href="#" class="btn">View Project</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact">
+        <h2 class="heading-sec fade-in-up">Get In Touch</h2>
+        <form class="contact__form fade-in-up">
+            <div class="contact__form-group">
+                <label for="name" class="contact__form-label">Your Name</label>
+                <input type="text" id="name" class="contact__form-input" placeholder="Your Name" required>
+            </div>
+            <div class="contact__form-group">
+                <label for="email" class="contact__form-label">Your Email</label>
+                <input type="email" id="email" class="contact__form-input" placeholder="Your Email" required>
+            </div>
+            <div class="contact__form-group">
+                <label for="message" class="contact__form-label">Your Message</label>
+                <textarea id="message" class="contact__form-input" placeholder="Your Message" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn">Send Message</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Purba Das. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            /* === Dual Canvas for Stars and Clouds === */
+            const starsCanvas = document.getElementById("stars");
+            const cloudsCanvas = document.getElementById("clouds");
+            const starsCtx = starsCanvas.getContext("2d");
+            const cloudsCtx = cloudsCanvas.getContext("2d");
+            let w = 0, h = 0;
+
+            const spaceDark = "#0a0a2a";
+            const spacePurple = "#7014e8";
+            const neonBlue = "#00f5ff";
+            const cosmicPink = "#ff2bfa";
+            const starYellow = "#fff700";
+            
+            // Helper function to convert a hex color string to an RGB array
+            const hexToRgb = hex => {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return [r, g, b];
+            };
+            // Helper function to convert an RGB array back to a hex string
+            const rgbToHex = (r, g, b) => `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+            // Helper function for linear interpolation between two colors
+            const lerpColor = (color1, color2, t) => {
+                const rgb1 = hexToRgb(color1);
+                const rgb2 = hexToRgb(color2);
+                const r = Math.round(rgb1[0] + (rgb2[0] - rgb1[0]) * t);
+                const g = Math.round(rgb1[1] + (rgb2[1] - rgb1[1]) * t);
+                const b = Math.round(rgb1[2] + (rgb2[2] - rgb1[2]) * t);
+                return rgbToHex(r, g, b);
+            };
+
+            // Function to handle canvas resizing and maintain aspect ratio
+            function resizeCanvas() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                w = window.innerWidth;
+                h = window.innerHeight;
+                starsCanvas.width = cloudsCanvas.width = Math.floor(w * dpr);
+                starsCanvas.height = cloudsCanvas.height = Math.floor(h * dpr);
+                starsCanvas.style.width = cloudsCanvas.style.width = "100%";
+                starsCanvas.style.height = cloudsCanvas.style.height = "100%";
+                starsCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                cloudsCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            window.addEventListener("resize", resizeCanvas, { passive: true });
+            resizeCanvas();
+
+            // A class to manage the shooting stars
+            class ShootingStar {
+                constructor() { this.reset(); }
+                reset() {
+                    const startOnTopEdge = Math.random() < 0.5;
+                    if (startOnTopEdge) {
+                        this.x = Math.random() * w;
+                        this.y = 0;
+                    } else {
+                        this.x = 0;
+                        this.y = Math.random() * h;
+                    }
+                    this.angle = Math.PI / 4;
+                    this.len = 250 + Math.random() * 250;
+                    this.speed = 0.2 + Math.random() * 0.3;
+                    this.size = 0.8 + Math.random() * 0.9;
+                    this.opacity = 1;
+                    this.decay = 0.001 + Math.random() * 0.0005;
+                }
+                update() {
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed;
+                    this.opacity -= this.decay;
+                }
+                draw() {
+                    starsCtx.save();
+                    starsCtx.globalAlpha = Math.max(this.opacity, 0);
+                    starsCtx.lineCap = "round";
+                    starsCtx.strokeStyle = "#ffffff";
+                    starsCtx.lineWidth = this.size;
+                    starsCtx.beginPath();
+                    starsCtx.moveTo(this.x, this.y);
+                    starsCtx.lineTo(
+                        this.x - Math.cos(this.angle) * this.len,
+                        this.y - Math.sin(this.angle) * this.len
+                    );
+                    starsCtx.stroke();
+                    starsCtx.restore();
+                }
+            }
+
+            // A class to manage the static, blinking stars
+            class StaticStar {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.isLarge = Math.random() < 0.2;
+                    this.size = this.isLarge ? (Math.random() * 1.5 + 0.5) : (Math.random() * 0.8 + 0.2);
+                    this.baseOpacity = Math.random() * 0.6 + 0.2;
+                    this.opacity = this.baseOpacity;
+                    this.blinkTimer = Math.floor(Math.random() * 1200) + 800;
+                    this.blinkPhase = 0;
+                    this.isBlinking = false;
+                }
+                update() {
+                    if (!this.isBlinking) {
+                        this.blinkTimer -= 1;
+                        if (this.blinkTimer <= 0) {
+                            this.isBlinking = true;
+                            this.blinkPhase = 0;
+                            this.blinkTimer = Math.floor(Math.random() * 1200) + 800;
+                        }
+                    } else {
+                        this.blinkPhase += 0.015;
+                        this.opacity = this.baseOpacity + (1 - this.baseOpacity) * Math.sin(this.blinkPhase);
+                        if (this.blinkPhase >= Math.PI / 2) {
+                            this.isBlinking = false;
+                            this.opacity = this.baseOpacity;
+                        }
+                    }
+                }
+                draw() {
+                    starsCtx.save();
+                    starsCtx.shadowBlur = this.isBlinking ? 25 : 0;
+                    starsCtx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                    starsCtx.globalAlpha = this.opacity;
+                    starsCtx.fillStyle = this.isBlinking ? "#ffffff" : "rgba(255, 255, 255, 0.8)";
+                    const currentSize = this.isBlinking ? (this.isLarge ? this.size * 2 : this.size * 1.5) : this.size;
+                    starsCtx.beginPath();
+                    starsCtx.arc(this.x, this.y, currentSize, 0, Math.PI * 2);
+                    starsCtx.fill();
+                    starsCtx.restore();
+                }
+            }
+
+            // Define the two pre-defined cloud shapes
+            const cloudShape1 = new Path2D();
+            cloudShape1.arc(0, 0, 20, 0, Math.PI * 2);
+            cloudShape1.arc(25, -5, 22, 0, Math.PI * 2);
+            cloudShape1.arc(50, 0, 18, 0, Math.PI * 2);
+            cloudShape1.arc(35, 15, 25, 0, Math.PI * 2);
+            cloudShape1.arc(10, 15, 15, 0, Math.PI * 2);
+
+            const cloudShape2 = new Path2D();
+            cloudShape2.arc(0, 0, 15, 0, Math.PI * 2);
+            cloudShape2.arc(15, -10, 20, 0, Math.PI * 2);
+            cloudShape2.arc(30, 0, 15, 0, Math.PI * 2);
+            cloudShape2.arc(20, 10, 18, 0, Math.PI * 2);
+
+            const cloudShapes = [cloudShape1, cloudShape2];
+
+            // A class to manage the animated clouds
+            class Cloud {
+                constructor(startX) {
+                    this.x = startX || Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.speed = 0.05 + Math.random() * 0.1;
+                    this.size = 0.5 + Math.random() * 0.8;
+                    this.opacity = 0.1 + Math.random() * 0.1;
+                    this.shape = cloudShapes[Math.floor(Math.random() * cloudShapes.length)];
+                    
+                    // The core change to support color transitions
+                    this.color = spacePurple;
+                    this.targetColor = spacePurple;
+                    this.colorTransitionSpeed = 0.01;
+                }
+
+                // Method to update the cloud's color smoothly
+                updateColor(newColor) {
+                    this.targetColor = newColor;
+                }
+
+                update() {
+                    // Update the color smoothly towards the target color
+                    this.color = lerpColor(this.color, this.targetColor, this.colorTransitionSpeed);
+
+                    this.x += this.speed;
+                    if (this.x > w + 100) {
+                        this.x = -100;
+                        this.y = Math.random() * h;
+                    }
+                }
+
+                draw() {
+                    cloudsCtx.save();
+                    cloudsCtx.translate(this.x, this.y);
+                    cloudsCtx.scale(this.size, this.size);
+                    cloudsCtx.globalAlpha = this.opacity;
+                    
+                    // Use the interpolated color for the fill style
+                    cloudsCtx.fillStyle = this.color;
+                    cloudsCtx.shadowBlur = 20;
+                    cloudsCtx.shadowColor = this.color; // Add a glow effect
+                    
+                    cloudsCtx.fill(this.shape);
+                    cloudsCtx.restore();
+                }
+            }
+
+            const numStars = 200;
+            const stars = Array(numStars).fill().map(() => new StaticStar());
+            const numShootingStars = 3;
+            const shootingStars = Array(numShootingStars).fill().map(() => new ShootingStar());
+            const numClouds = 10;
+            const clouds = Array(numClouds).fill().map((_, i) => new Cloud((i / numClouds) * w));
+
+            let lastTime = 0;
+            const animate = (timestamp) => {
+                const deltaTime = timestamp - lastTime;
+                lastTime = timestamp;
+
+                starsCtx.clearRect(0, 0, w, h);
+                cloudsCtx.clearRect(0, 0, w, h);
+
+                // Update and draw static stars
+                stars.forEach(s => {
+                    s.update();
+                    s.draw();
+                });
+
+                // Update and draw shooting stars
+                shootingStars.forEach(s => {
+                    s.update();
+                    s.draw();
+                    if (s.opacity <= 0) {
+                        s.reset();
+                    }
+                });
+
+                // Check scroll position and update cloud colors
+                checkScrollPositionAndColor();
+
+                // Update and draw clouds
+                clouds.forEach(c => {
+                    c.update();
+                    c.draw();
+                });
+
+                requestAnimationFrame(animate);
+            };
+
+            const sectionColors = {
+                home: neonBlue,
+                about: cosmicPink,
+                projects: spacePurple,
+                contact: starYellow
+            };
+            const sections = document.querySelectorAll('section');
+            const sectionOffsets = {};
+            
+            // Function to get the top offset of each section
+            const getSectionOffsets = () => {
+                sections.forEach(section => {
+                    sectionOffsets[section.id] = section.offsetTop;
+                });
+            };
+            
+            // Re-calculate offsets on resize to handle responsive changes
+            window.addEventListener('resize', getSectionOffsets);
+            getSectionOffsets();
+
+            // Function to change the cloud color based on the current section
+            const checkScrollPositionAndColor = () => {
+                const scrollY = window.scrollY + h * 0.4; // Add a buffer for earlier transition
+                
+                let activeColor = sectionColors.home;
+                
+                sections.forEach(section => {
+                    if (scrollY >= section.offsetTop) {
+                        activeColor = sectionColors[section.id];
+                    }
+                });
+                
+                clouds.forEach(c => c.updateColor(activeColor));
+            };
+
+            animate(0); // Start the animation loop
+
+            /* === Section Visibility and Interaction === */
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, { threshold: 0.2 });
+
+            document.querySelectorAll('.fade-in-up').forEach(element => {
+                observer.observe(element);
+            });
+            
+            /* === Character Pop-up === */
+            const characterPopUp = document.getElementById('character-pop-up');
+            const characterMessage = document.getElementById('character-message');
+            
+            // Array of messages and their corresponding elements
+            const interactiveElements = [
+                { element: document.querySelector('.header__link[href="#about"]'), message: "Learn more about me and my skills!" },
+                { element: document.querySelector('.header__link[href="#projects"]'), message: "Explore my latest creative projects!" },
+                { element: document.querySelector('.header__link[href="#contact"]'), message: "Ready to connect? Send me a message!" },
+                { element: document.getElementById('view-work-btn'), message: "Click here to explore my work!" },
+            ];
+            
+            // Mouse event handlers to show and hide the pop-up
+            interactiveElements.forEach(item => {
+                item.element.addEventListener('mouseenter', () => {
+                    characterMessage.textContent = item.message;
+                    characterPopUp.classList.add('show');
+                });
+                item.element.addEventListener('mouseleave', () => {
+                    characterPopUp.classList.remove('show');
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
